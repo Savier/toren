@@ -17,12 +17,14 @@ __license__   		= 'MIT'
 
 
 import sys, os, os.path
+import re
 from fnmatch import fnmatch
+import argparse
 
 import transmissionrpc
 
 
-def configure():
+def load_config():
 
   cfg = {}
 
@@ -38,8 +40,9 @@ def configure():
   return cfg
 
 
-def mkclient(cfg):
+def make_client(cfg):
   if cfg['TRANSMISSION_HOST'] is None:
+    print(cfg)
     print('Not configured. See README.')
     exit(1)
     
@@ -49,8 +52,7 @@ def mkclient(cfg):
                                 password=cfg['TRANSMISSION_PASW'])
 
 
-def rename_torrent(fromname, toname):
-  client = mkclient(configure())
+def rename_torrent(client, fromname, toname):
   got = None
   
   #TODO fetch torrents in order one-by-one till needed one
@@ -78,28 +80,66 @@ def rename_torrent(fromname, toname):
   return torrent.name == toname
 
 
-def list_torrents(mask=None):
-  client = mkclient(configure())
+def list_torrents(client, mask=None):
   for torrent in client.get_torrents():
     if mask is not None and not fnmatch(torrent.name, mask):
       continue
     print('{0}\t{1}'.format(torrent.id, torrent.name))
 
 
+def move_torrent(client, filemask, path):
+  #TODO make move
+  raise NotImplemented
+ 
+
+def argparser():
+  parser = argparse.ArgumentParser(description='Transmission torrent renamer.')
+  parser.add_argument('filemask', help='Glob mask defines torrent to rename.', nargs='?', default=None)
+  parser.add_argument('newname', help='New name for torrent.', nargs='?', default=None)
+  parser.add_argument('-m', '--move', help='Move torrent data to specified path.')
+  parser.add_argument('-u', '--url', help='Where to find transmission instance, ex user:password@host:port.')
+
+  return parser.parse_args()
+
+
+def parse_url(url):
+  URL_RE = re.compile('((?P<user>[^:]+)(:(?P<pasw>.+))?@)?(?P<host>[^@:]+)(:(?P<port>\\d+))?')
+  match = URL_RE.match(url)
+  if match is None:
+    raise BadUrlSyntax
+
+  gr = match.groupdict()
+  #print(gr.get('user'), gr.get('pasw'), gr.get('host'), gr.get('port')) 
+  return gr.get('user'), gr.get('pasw'), gr.get('host'), gr.get('port')
+
+
 if __name__ == '__main__':
-  print('Transmission torrent renamer.')
-  
-  #TODO Add some argv framework with configuration options etc.
-  if len(sys.argv) == 1:
-    list_torrents()
-  elif len(sys.argv) == 2:
-    list_torrents(sys.argv[1])
-  elif len(sys.argv) != 3:
-    print('Error in parameters.')
-    print('Use: [toren fromname toname] to rename or [toren]/[toren mask] to list')
-    print('Used: [{0}]'.format(']['.join(sys.argv)))
+  args = argparser()
+
+  if args.url:
+    cfg = {}
+    (cfg['TRANSMISSION_USER'], 
+    cfg['TRANSMISSION_PASW'], 
+    cfg['TRANSMISSION_HOST'],
+    cfg['TRANSMISSION_PORT'] ) = parse_url(args.url)
   else:
-    if rename_torrent(sys.argv[1], sys.argv[2]):
+    cfg = load_config()
+
+  client = make_client(cfg)
+  
+  if not args.filemask:
+    list_torrents(client)
+    exit(0)
+
+  if args.move:
+    move_torrent(client, args.filemask, args.move)
+
+  if not args.newname:
+    if not args.move:
+      list_torrents(client, args.filemask)
+
+  else:
+    if rename_torrent(client, args.filemask, args.newname):
       print('Ok.')
     else:
       print('Failed.')
