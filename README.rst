@@ -3,6 +3,9 @@ toren
 
 Small script to rename files dowloaded by transmission.
 
+Uses config from ~/toren.config which is python code what defines variables 
+``TRANSMISSION_HOST``, ``TRANSMISSION_PORT``, ``TRANSMISSION_USER``, ``TRANSMISSION_PASW``
+
 This repo mainly for learning git, github, coding style, etc.
 Any comments on it and my English are welcome.
 ...and yes, it does something useful

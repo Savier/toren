@@ -16,19 +16,38 @@ __copyright__ 		= 'Copyright (c) 2013 Aleksandr Semenov <iamsav@gmail.com>'
 __license__   		= 'MIT'
 
 
-import sys
+import sys, os, os.path
 from fnmatch import fnmatch
 
 import transmissionrpc
 
 
-#TODO move to the options, config, and/or environment variables
-TRANSMISSION_HOST = 'host'  # Where to look for transmission
-TRANSMISSION_PORT = 9091    # port
+def configure():
+
+  cfg = {}
+
+  try:
+    exec(open(os.path.expanduser('~/toren.config')).read(), cfg) #Little bit insecure
+  except FileNotFoundError:
+    print('No config found. See README.rst')
+    exit(1)
+
+  for var in ('HOST', 'PORT', 'USER', 'PASW'):
+    fullvar = 'TRANSMISSION_{0}'.format(var)
+    cfg[fullvar] = cfg.get(fullvar) #Fill defaults with None
+
+  return cfg
+
+
+def mkclient(cfg):
+  return transmissionrpc.Client(cfg['TRANSMISSION_HOST'], 
+                                port=cfg['TRANSMISSION_PORT'],
+                                user=cfg['TRANSMISSION_USER'],
+                                password=cfg['TRANSMISSION_PASW'])
 
 
 def rename_torrent(fromname, toname):
-  client = transmissionrpc.Client('netgear', port=8181)
+  client = mkclient(configure())
   got = None
   
   #TODO fetch torrents in order one-by-one till needed one
@@ -57,7 +76,7 @@ def rename_torrent(fromname, toname):
 
 
 def list_torrents(mask=None):
-  client = transmissionrpc.Client('netgear', port=8181)
+  client = mkclient(configure())
   for torrent in client.get_torrents():
     if mask is not None and not fnmatch(torrent.name, mask):
       continue
