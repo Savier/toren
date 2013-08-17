@@ -29,8 +29,7 @@ def configure():
   try:
     exec(open(os.path.expanduser('~/toren.config')).read(), cfg) #Little bit insecure
   except FileNotFoundError:
-    print('No config found. See README.rst')
-    exit(1)
+    pass
 
   for var in ('HOST', 'PORT', 'USER', 'PASW'):
     fullvar = 'TRANSMISSION_{0}'.format(var)
@@ -40,6 +39,10 @@ def configure():
 
 
 def mkclient(cfg):
+  if cfg['TRANSMISSION_HOST'] is None:
+    print('Not configured. See README.')
+    exit(1)
+    
   return transmissionrpc.Client(cfg['TRANSMISSION_HOST'], 
                                 port=cfg['TRANSMISSION_PORT'],
                                 user=cfg['TRANSMISSION_USER'],
