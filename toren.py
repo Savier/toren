@@ -66,14 +66,8 @@ def rename_torrent(client, fromname, toname):
     print('Not found torrent for {}'.format(fromname))
     return False
 
-  files = got.files()
-  #TODO come up with something to handle multiple files
-  if len(files) != 1:
-    print('Sorry, only one file per torrent supported (got {}).'.format(len(files)))
-    return False
-
   #Ok, got good torrent in got
-  client.rename_torrent_path(got.id, files[0]['name'], toname)
+  client.rename_torrent_path(got.id, torrent.name, toname)
   print('Rename command sent.')
   torrent = client.get_torrent(got.id)
   print('Now torrent named {}'.format(torrent.name))
