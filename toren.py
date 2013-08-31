@@ -82,11 +82,7 @@ def list_torrents(client, mask=None):
 
 def move_torrent(client, torrent, path):
   if path.isdigit() and MOVE_DIRS and len(MOVE_DIRS)>int(path):
-    print(path)
     path = MOVE_DIRS[int(path)]
-    print(type(path))
-    print(type('Path expanded to {}'.format(path)))
-    print(list(map(ord, path)))
     print('Path expanded to {}'.format(path))
 
   client.move_torrent_data(torrent.id, path)
