@@ -25,13 +25,14 @@ import argparse, textwrap
 import transmissionrpc
 
 LISTING_FORMAT = '{0:>3}  {1:<50} {2}'   
+MOVE_DIRS = None
 
 def load_config():
 
   cfg = {}
 
   try:
-    exec(open(os.path.expanduser('~/toren.config')).read(), cfg) #Little bit insecure
+    exec(open(os.path.expanduser('~/toren.config'), encoding='utf-8').read(), cfg) #Little bit insecure
   except FileNotFoundError:
     pass
 
@@ -80,10 +81,19 @@ def list_torrents(client, mask=None):
 
 
 def move_torrent(client, torrent, path):
+  if path.isdigit() and MOVE_DIRS and len(MOVE_DIRS)>int(path):
+    print(path)
+    path = MOVE_DIRS[int(path)]
+    print(type(path))
+    print(type('Path expanded to {}'.format(path)))
+    print(list(map(ord, path)))
+    print('Path expanded to {}'.format(path))
+
   client.move_torrent_data(torrent.id, path)
   print('Move command sent.')
   torrent = client.get_torrent(torrent.id)
   print('Now torrent placed {}'.format(torrent.downloadDir))
+  print('Ok.' if torrent.downloadDir == path else 'Failed.')
   return torrent.downloadDir == path
  
 
@@ -127,6 +137,11 @@ if __name__ == '__main__':
     #global LISTING_FORMAT
     #TODO refactor to object wrapped over client wich has config
     LISTING_FORMAT = cfg['LISTING_FORMAT']
+
+  if 'MOVE_DIRS' in cfg:
+    #global MOVE_DIRS
+    #TODO refactor to object wrapped over client wich has config
+    MOVE_DIRS = cfg['MOVE_DIRS']
 
   if args.url:
     (cfg['TRANSMISSION_USER'], 
