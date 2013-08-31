@@ -11,7 +11,8 @@
 __author__    		= 'Aleksandr Semenov <iamsav@gmail.com>'
 __version_major__   = 1
 __version_minor__   = 0
-__version__   		= '{0}.{1}'.format(__version_major__, __version_minor__)
+__version_3__       = 1
+__version__   		= '{0}.{1}.{2}'.format(__version_major__, __version_minor__, __version_3__)
 __copyright__ 		= 'Copyright (c) 2013 Aleksandr Semenov <iamsav@gmail.com>'
 __license__   		= 'MIT'
 
@@ -23,6 +24,7 @@ import argparse
 
 import transmissionrpc
 
+LISTING_FORMAT = '{0:>3}  {1:<50} {2}'   
 
 def load_config():
 
@@ -74,7 +76,7 @@ def list_torrents(client, mask=None):
   for torrent in client.get_torrents():
     if mask is not None and not fnmatch(torrent.name, mask):
       continue
-    print('{0:>3}  {1:<50} {2}'.format(torrent.id, torrent.name, torrent.downloadDir))
+    print(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
 
 
 def move_torrent(client, torrent, path):
@@ -110,14 +112,17 @@ def parse_url(url):
 if __name__ == '__main__':
   args = argparser()
 
+  cfg = load_config()
+  if 'LISTING_FORMAT' in cfg:
+    #global LISTING_FORMAT
+    #TODO refactor to object wrapped over client wich has config
+    LISTING_FORMAT = cfg['LISTING_FORMAT']
+
   if args.url:
-    cfg = {}
     (cfg['TRANSMISSION_USER'], 
     cfg['TRANSMISSION_PASW'], 
     cfg['TRANSMISSION_HOST'],
     cfg['TRANSMISSION_PORT'] ) = parse_url(args.url)
-  else:
-    cfg = load_config()
 
   client = make_client(cfg)
   
