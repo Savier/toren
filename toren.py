@@ -20,7 +20,7 @@ __license__   		= 'MIT'
 import sys, os, os.path
 import re
 from fnmatch import fnmatch
-import argparse
+import argparse, textwrap
 
 import transmissionrpc
 
@@ -88,8 +88,18 @@ def move_torrent(client, torrent, path):
  
 
 def argparser():
-  parser = argparse.ArgumentParser(prog='Toren', description='Transmission torrent renamer.')
-  parser.add_argument('filemask', help='Glob mask defines torrent to rename.', nargs='?', default=None)
+  parser = argparse.ArgumentParser(prog='Toren', description='Transmission torrent renamer.',
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    epilog=textwrap.dedent('''\
+        Config file read from ~/toren.config can has following options:
+          TRANSMISSION_HOST = 'hostname'
+          TRANSMISSION_PORT = 9090
+          TRANSMISSION_USER = 'user'
+          TRANSMISSION_PASW = 'password'
+          LISTING_FORMAT = '{0:>3} {1:<62} {2}'
+        config must be correct python program and parsed by python interpreter
+        '''))
+  parser.add_argument('filemask', help='Glob mask defines torrent(s) to rename or list.', nargs='?', default=None)
   parser.add_argument('newname', help='New name for torrent.', nargs='?', default=None)
   parser.add_argument('-m', '--move', help='Move torrent data to specified path.')
   parser.add_argument('-u', '--url', help='Where to find transmission instance, ex user:password@host:port.')
