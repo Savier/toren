@@ -10,3 +10,9 @@ Uses config from ~/toren.config which is python code what defines variables
 This repo mainly for learning git, github, coding style, etc.
 Any comments on it and my English are welcome.
 ...and yes, it does something useful
+
+INSTALL
+-------
+
+Requires Python 3.x http://www.python.org/
+and transmissionrpc module http://www.bitbucket.org/blueluna/transmissionrpc/
