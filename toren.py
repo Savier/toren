@@ -81,6 +81,7 @@ def list_torrents(client, mask=None):
 
 
 def move_torrent(client, torrent, path):
+  # Undocumented feature - MOVE_DIRS in config is a tuple of predefined directories
   if path.isdigit() and MOVE_DIRS and len(MOVE_DIRS)>int(path):
     path = MOVE_DIRS[int(path)]
     print('Path expanded to {}'.format(path))
@@ -131,12 +132,12 @@ if __name__ == '__main__':
   cfg = load_config()
   if 'LISTING_FORMAT' in cfg:
     #global LISTING_FORMAT
-    #TODO refactor to object wrapped over client wich has config
+    #TODO refactor to object wrapped over client which has config
     LISTING_FORMAT = cfg['LISTING_FORMAT']
 
   if 'MOVE_DIRS' in cfg:
     #global MOVE_DIRS
-    #TODO refactor to object wrapped over client wich has config
+    #TODO refactor to object wrapped over client which has config
     MOVE_DIRS = cfg['MOVE_DIRS']
 
   if args.url:
