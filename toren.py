@@ -27,6 +27,13 @@ import transmissionrpc
 LISTING_FORMAT = '{0:>3}  {1:<50} {2}'   
 MOVE_DIRS = None
 
+
+def safeprint(*args, **kwargs):
+    f = kwargs.get('file', sys.stdout)
+    print(*[arg.encode(f.encoding, 'replace').decode(f.encoding) for arg in args], **kwargs)
+
+
+
 def load_config():
 
   cfg = {}
@@ -77,7 +84,7 @@ def list_torrents(client, mask=None):
   for torrent in client.get_torrents():
     if mask is not None and not fnmatch(torrent.name, mask):
       continue
-    print(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
+    safeprint(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
 
 
 def move_torrent(client, torrent, path):
