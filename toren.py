@@ -25,7 +25,7 @@ Options:
 __author__    		= 'Aleksandr Semenov <iamsav@gmail.com>'
 __version_major__   = 1
 __version_minor__   = 0
-__version_3__       = 1
+__version_3__       = 2
 __version__   		= '{0}.{1}.{2}'.format(__version_major__, __version_minor__, __version_3__)
 __copyright__ 		= 'Copyright (c) 2013 Aleksandr Semenov <iamsav@gmail.com>'
 __license__   		= 'MIT'
