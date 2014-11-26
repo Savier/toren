@@ -15,9 +15,9 @@ Usage:
   toren -V | --version
 
 Options:
-  -u <url>, --url=<url>     Url of transmission instance in the form user:password@host:port
-  -m <dest>, --move=<dest>  Dir to move file (may use index from config table)
-  -i, --id=<id>             Lookup by transmission id
+  -u, --url=<url>     Url of transmission instance in the form user:password@host:port
+  -m, --move=<dest>  Dir to move file (may use index from config table)
+  -i, --id=<id>             Lookup by transmission id (very fast)
   -l, --last                Use last id
   -V, --version             Prints version info
 '''
@@ -102,6 +102,7 @@ def find_torrents(client, args):
         
 def rename_torrent(client, torrent, toname):
  
+  print('Previous name was "{}".'.format(torrent.name))
   client.rename_torrent_path(torrent.id, torrent.name, toname)
   print('Rename command sent.')
   torrent = client.get_torrent(torrent.id)
@@ -115,6 +116,7 @@ def move_torrent(client, torrent, path):
     path = MOVE_DIRS[int(path)]
     print('Path expanded to {}'.format(path))
 
+  print('Previous folder was "{}".'.format(torrent.downloadDir))
   client.move_torrent_data(torrent.id, path)
   print('Move command sent.')
   torrent = client.get_torrent(torrent.id)
