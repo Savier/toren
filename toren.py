@@ -8,6 +8,20 @@
 #
 # requires module 'transmissionrpc'
 
+'''Transmission renamer.
+
+Usage:
+  toren [options] [(--id=<id> | --last | <oldname>)] [<newname>]
+  toren -V | --version
+
+Options:
+  -u <url>, --url=<url>     Url of transmission instance in the form user:password@host:port
+  -m <dest>, --move=<dest>  Dir to move file (may use index from config table)
+  -i, --id=<id>             Lookup by transmission id
+  -l, --last                Use last id
+  -V, --version             Prints version info
+'''
+
 __author__    		= 'Aleksandr Semenov <iamsav@gmail.com>'
 __version_major__   = 1
 __version_minor__   = 0
@@ -21,6 +35,7 @@ import sys, os, os.path
 import re
 from fnmatch import fnmatch
 import argparse, textwrap
+from docopt import docopt
 
 import transmissionrpc
 
@@ -62,15 +77,29 @@ def make_client(cfg):
                                 password=cfg['TRANSMISSION_PASW'])
 
 
-def find_torrent(client, mask):
-  for torrent in client.get_torrents():
-    if fnmatch(torrent.name, mask):
-      return torrent
-  
-  print('Not found torrent for {}'.format(mask))
-  exit(1)
 
+def find_torrents(client, args):
+    if args['--id'] is not None:
+        yield client.get_torrent(int(args['--id']))
+        return
 
+    print('Loading list...', end='', flush=True)
+    torrents = client.get_torrents()
+    print('done.')
+
+    if args['--last']:
+        yield torrents[-1]
+        return
+
+    returned = 0
+    for torrent in torrents:
+        if args['<oldname>'] is None or fnmatch(torrent.name, args['<oldname>']):
+            returned += 1
+            yield torrent
+    if not returned:
+        print('None found by mask {}'.format(args['<oldname>']))
+
+        
 def rename_torrent(client, torrent, toname):
  
   client.rename_torrent_path(torrent.id, torrent.name, toname)
@@ -78,13 +107,6 @@ def rename_torrent(client, torrent, toname):
   torrent = client.get_torrent(torrent.id)
   print('Now torrent named {}'.format(torrent.name))
   return torrent.name == toname
-
-
-def list_torrents(client, mask=None):
-  for torrent in client.get_torrents():
-    if mask is not None and not fnmatch(torrent.name, mask):
-      continue
-    safeprint(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
 
 
 def move_torrent(client, torrent, path):
@@ -101,27 +123,6 @@ def move_torrent(client, torrent, path):
   return torrent.downloadDir == path
  
 
-def argparser():
-  parser = argparse.ArgumentParser(prog='Toren', description='Transmission torrent renamer.',
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    epilog=textwrap.dedent('''\
-        Config file read from ~/toren.config can has following options:
-          TRANSMISSION_HOST = 'hostname'
-          TRANSMISSION_PORT = 9090
-          TRANSMISSION_USER = 'user'
-          TRANSMISSION_PASW = 'password'
-          LISTING_FORMAT = '{0:>3} {1:<62} {2}'
-        config must be correct python program and parsed by python interpreter
-        '''))
-  parser.add_argument('filemask', help='Glob mask defines torrent(s) to rename or list.', nargs='?', default=None)
-  parser.add_argument('newname', help='New name for torrent.', nargs='?', default=None)
-  parser.add_argument('-m', '--move', help='Move torrent data to specified path.')
-  parser.add_argument('-u', '--url', help='Where to find transmission instance, ex user:password@host:port.')
-  parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
-
-  return parser.parse_args()
-
-
 def parse_url(url):
   URL_RE = re.compile('((?P<user>[^:]+)(:(?P<pasw>.+))?@)?(?P<host>[^@:]+)(:(?P<port>\\d+))?')
   match = URL_RE.match(url)
@@ -134,7 +135,7 @@ def parse_url(url):
 
 
 if __name__ == '__main__':
-  args = argparser()
+  args = docopt(__doc__, version=__version__)
 
   cfg = load_config()
   if 'LISTING_FORMAT' in cfg:
@@ -147,31 +148,23 @@ if __name__ == '__main__':
     #TODO refactor to object wrapped over client which has config
     MOVE_DIRS = cfg['MOVE_DIRS']
 
-  if args.url:
+  if args['--url'] is not None:
     (cfg['TRANSMISSION_USER'], 
     cfg['TRANSMISSION_PASW'], 
     cfg['TRANSMISSION_HOST'],
-    cfg['TRANSMISSION_PORT'] ) = parse_url(args.url)
+    cfg['TRANSMISSION_PORT'] ) = parse_url(args['--url'])
 
   client = make_client(cfg)
   
-  if not args.filemask:
-    list_torrents(client)
-    exit(0)
-
-  torrent = None
-  if args.move:
-    torrent = find_torrent(client, args.filemask)
-    move_torrent(client, torrent, args.move)
-
-  if not args.newname:
-    if not args.move:
-      list_torrents(client, args.filemask)
-
-  else:
-    if torrent is None:
-      torrent = find_torrent(client, args.filemask)
-    if rename_torrent(client, torrent, args.newname):
-      print('Ok.')
+  for torrent in find_torrents(client, args):
+    if args['--move'] is not None:
+      move_torrent(client, torrent, args['--move'])
+    
+    if args['<newname>'] is None: 
+      if args['--move'] is None:
+        safeprint(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
     else:
-      print('Failed.')
+      if rename_torrent(client, torrent, args['<newname>']):
+        print('Ok.')
+      else:
+        print('Failed.')
