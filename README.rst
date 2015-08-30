@@ -14,5 +14,7 @@ Any comments on it and my English are welcome.
 INSTALL
 -------
 
-Requires Python 3.x http://www.python.org/
-and transmissionrpc module http://www.bitbucket.org/blueluna/transmissionrpc/
+Requires 
+ - Python 3.x http://www.python.org/
+ - transmissionrpc module http://www.bitbucket.org/blueluna/transmissionrpc/
+ - docopt module http://docopt.org
