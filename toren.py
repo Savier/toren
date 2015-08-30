@@ -15,11 +15,11 @@ Usage:
   toren -V | --version
 
 Options:
-  -u, --url=<url>     Url of transmission instance in the form user:password@host:port
+  -u, --url=<url>    Url of transmission instance in the form user:password@host:port
   -m, --move=<dest>  Dir to move file (may use index from config table)
-  -i, --id=<id>             Lookup by transmission id (very fast)
-  -l, --last                Use last id
-  -V, --version             Prints version info
+  -i, --id=<id>      Lookup by transmission id (very fast)
+  -l, --last         Use last id
+  -V, --version      Prints version info
 '''
 
 __author__    		= 'Aleksandr Semenov <iamsav@gmail.com>'
