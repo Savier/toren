@@ -39,7 +39,7 @@ from docopt import docopt
 
 import transmissionrpc
 
-LISTING_FORMAT = '{0:>3}  {1:<50} {2}'   
+LISTING_FORMAT = '{0.id:>3}  {0.name:<50} {0.downloadDir}'   
 MOVE_DIRS = None
 
 
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     
     if args['<newname>'] is None: 
       if args['--move'] is None:
-        safeprint(LISTING_FORMAT.format(torrent.id, torrent.name, torrent.downloadDir))
+        safeprint(LISTING_FORMAT.format(torrent))
     else:
       if rename_torrent(client, torrent, args['<newname>']):
         print('Ok.')
