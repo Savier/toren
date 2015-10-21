@@ -39,8 +39,7 @@ from docopt import docopt
 import transmissionrpc
 
 LISTING_FORMAT = '{0.id:>3}  {0.name:<50} {0.downloadDir}'   
-MOVE_DIRS = None
-
+MOVE_DIRS = []
 
 def safeprint(*args, **kwargs):
     f = kwargs.get('file', sys.stdout)
