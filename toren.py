@@ -98,11 +98,11 @@ def find_torrents(client, args):
 
 def rename_torrent(client, torrent, toname):
 
-  print('Previous name was "{}".'.format(torrent.name))
+  safeprint('Previous name was "{}".'.format(torrent.name))
   client.rename_torrent_path(torrent.id, torrent.name, toname)
   print('Rename command sent.')
   torrent = client.get_torrent(torrent.id)
-  print('Now torrent named {}'.format(torrent.name))
+  safeprint('Now torrent named {}'.format(torrent.name))
   return torrent.name == toname
 
 
@@ -110,13 +110,13 @@ def move_torrent(client, torrent, path):
   # Undocumented feature - MOVE_DIRS in config is a tuple of predefined directories
   if path.isdigit() and MOVE_DIRS and len(MOVE_DIRS) > int(path):
     path = MOVE_DIRS[int(path)]
-    print('Path expanded to {}'.format(path))
+    safeprint('Path expanded to {}'.format(path))
 
-  print('Previous folder was "{}".'.format(torrent.downloadDir))
+  safeprint('Previous folder was "{}".'.format(torrent.downloadDir))
   client.move_torrent_data(torrent.id, path)
   print('Move command sent.')
   torrent = client.get_torrent(torrent.id)
-  print('Now torrent placed {}'.format(torrent.downloadDir))
+  safeprint('Now torrent placed {}'.format(torrent.downloadDir))
   print('Ok.' if torrent.downloadDir == path else 'Failed.')
   return torrent.downloadDir == path
 
